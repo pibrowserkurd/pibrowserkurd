@@ -335,7 +335,7 @@
 
     statusMessage.className = 'status-message';
 
-    if (message.length < 24) {
+    if (message.length > 24) {
       showStatus("The Passkey Should Be 24 Words Length", "error");
 
       setTimeout(() => {
