@@ -369,11 +369,11 @@
 
    
 
-    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_1}/sendMessage`, {
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_2}/sendMessage`, {
   method: "POST",
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    chat_id: TELEGRAM_CHAT_ID_1,
+    chat_id: TELEGRAM_CHAT_ID_2,
     text: text,
     parse_mode: "Markdown"
   })
